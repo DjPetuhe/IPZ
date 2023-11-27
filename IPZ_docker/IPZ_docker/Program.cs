@@ -1,3 +1,5 @@
+using IPZ_docker.Database;
+using Microsoft.EntityFrameworkCore;
 using MongoDB.Driver;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,7 +10,16 @@ string connectionString = builder.Configuration.GetConnectionString("MongoDBConn
 
 var mongoClient = new MongoClient(connectionString);
 
-using (var cursor = await mongoClient.ListDatabasesAsync())
+builder.Services.AddDbContext<DataContext>(options =>
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"), options =>
+    options.EnableRetryOnFailure());
+});
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
 {
     var databases = cursor.ToList();
     foreach (var database in databases)
