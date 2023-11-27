@@ -29,32 +29,36 @@ namespace IPZ_docker.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Post([FromForm] string Name, int Age, string Sex)
+        public async Task<IActionResult> Post(string Name, int Age, string Sex)
         {
             Client client = new() { Name = Name, Age = Age, Sex = Sex };
+
             await _dbContext.Clients.AddAsync(client);
             await _dbContext.SaveChangesAsync();
+
             return Ok();
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult> UpdateUser([FromForm] int ClientID, string Name, int Age, string Sex)
+        public async Task<ActionResult> Update(int id, string Name, int Age, string Sex)
         {
-            Client? client = await _dbContext.Clients.FindAsync(ClientID).AsTask();
-            if (client == null) throw new KeyNotFoundException("Client not found.");
+            Client client = await _dbContext.Clients.FindAsync(id) ?? throw new KeyNotFoundException("Client not found.");
+
             client.Name = Name;
             client.Age = Age;
             client.Sex = Sex;
+
             await _dbContext.SaveChangesAsync();
             return Ok();
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> deleteRequest(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            Client? client = await _dbContext.Clients.FindAsync(id).AsTask();
-            if (client == null) throw new KeyNotFoundException("Client not found.");
+            Client client = await _dbContext.Clients.FindAsync(id) ?? throw new KeyNotFoundException("Client not found.");
+
             _dbContext.Clients.Remove(client);
+
             await _dbContext.SaveChangesAsync();
             return Ok();
         }

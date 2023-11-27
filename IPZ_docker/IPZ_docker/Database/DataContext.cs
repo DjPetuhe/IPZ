@@ -8,12 +8,28 @@ namespace IPZ_docker.Database
     {
         public DbSet<Client> Clients { get; set; }
         public DbSet<Car> Cars { get; set; }
-        public DbSet<Purchase> Purchase { get; set; }
+        public DbSet<Purchase> Purchases { get; set; }
 
         public DataContext(DbContextOptions<DataContext> options) : base(options) { }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
+            builder.Entity<Car>()
+                .HasOne(c => c.Purchase)
+                .WithOne(p => p.Car)
+                .HasForeignKey<Purchase>(p => p.CarId)
+                .IsRequired();
+
+            builder.Entity<Purchase>()
+                .HasOne(p => p.Car)
+                .WithOne(c => c.Purchase)
+                .HasForeignKey<Car>(c => c.PurchaseId);
+
+            builder.Entity<Client>()
+                .HasMany(c => c.Purchases)
+                .WithOne(p => p.Client)
+                .HasForeignKey(p => p.ClientId);
+
             builder.Entity<Client>()
                 .HasData(
                     new Client
@@ -21,7 +37,7 @@ namespace IPZ_docker.Database
                         Id = 1,
                         Name = "Smyslov Danil",
                         Age = 20,
-                        Sex = "No"
+                        Sex = "Male"
                     }
                 );
 
@@ -33,7 +49,17 @@ namespace IPZ_docker.Database
                         CarType = "Daewoo Lanos 2007",
                         Price = 1950,
                         Mileage = 250000,
-                        CarStatus = "Perfect"
+                        CarStatus = "Perfect",
+                        PurchaseId = 1
+                    }
+                );
+            builder.Entity<Purchase>()
+                .HasData(
+                    new Purchase
+                    {
+                        Id = 1,
+                        ClientId = 1,
+                        CarId = 1
                     }
                 );
 

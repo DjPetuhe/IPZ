@@ -1,4 +1,5 @@
-﻿namespace IPZ_docker.Entities
+﻿
+namespace IPZ_docker.Entities
 {
     public class Car
     {
@@ -9,6 +10,7 @@
         public string CarStatus { get; set; } = string.Empty;
 
         //Navigation
-        Purchase? Purchase { get; set; }
+        public int? PurchaseId { get; set; } = null;
+        public Purchase? Purchase { get; set; }
     }
 }
