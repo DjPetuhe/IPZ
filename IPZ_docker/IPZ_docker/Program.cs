@@ -4,16 +4,12 @@ using MongoDB.Driver;
 
 var builder = WebApplication.CreateBuilder(args);
 
-string connectionString = builder.Configuration.GetConnectionString("MongoDBConnection");
-
-var mongoClient = new MongoClient(connectionString);
+var mongoClient = new MongoClient(builder.Configuration.GetConnectionString("MongoDBConnection"));
+var db = mongoClient.GetDatabase("admin");
 
 builder.Services.AddSingleton<IMongoClient>(mongoClient);
-builder.Services.AddSingleton<IMongoDatabase>(provider =>
-{
-    var client = provider.GetRequiredService<IMongoClient>();
-    return client.GetDatabase("Sellers");
-});
+builder.Services.AddSingleton(db);
+
 
 builder.Services.AddDbContext<DataContext>(options =>
 {
@@ -35,14 +31,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-//app.UseHttpsRedirection();
-
 app.UseAuthorization();
 
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
-
     var context = services.GetRequiredService<DataContext>();
     if (context.Database.GetPendingMigrations().Any())
     {
