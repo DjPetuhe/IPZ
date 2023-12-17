@@ -20,7 +20,7 @@ services:
 
   carShopDB:
     image: "mcr.microsoft.com/mssql/server:2022-latest"
-    user: "root"
+    #user: "root"
     ports:
     - "1433:1433"
     networks:
