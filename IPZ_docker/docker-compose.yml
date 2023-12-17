@@ -1,0 +1,46 @@
+version: '3.4'
+
+services:
+  backendCarShop:
+    image: ipzdocker
+    restart: on-failure
+    build:
+      context: .
+      dockerfile: Dockerfile
+    networks:
+    - back
+    ports:
+    - "8080:80"
+    depends_on:
+    - carShopDB
+    - mongoDB
+    environment:
+        ConnectionStrings__DefaultConnection: "Encrypt=false;server=carShopDB;database=carShopDB;User=sa;password=Qwerty123!"
+        ConnectionStrings__MongoDBConnection: "mongodb://mongoDB:27017?authSource=admin"
+
+  carShopDB:
+    image: "mcr.microsoft.com/mssql/server:2022-latest"
+    #user: "root"
+    ports:
+    - "1433:1433"
+    networks:
+    - back
+    environment:
+        SA_PASSWORD: "Qwerty123!"
+        ACCEPT_EULA: "Y"
+
+  mongoDB:
+    image: mongo:6-jammy
+    ports:
+      - "27017:27017"
+    volumes:
+      - dbdata6:/data/db
+    networks:
+      - back
+
+volumes:
+  dbdata6:
+
+networks:
+ back:
+   driver: bridge

@@ -1,9 +1,24 @@
+using IPZ_docker.Database;
+using Microsoft.EntityFrameworkCore;
+using MongoDB.Driver;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+var mongoClient = new MongoClient(builder.Configuration.GetConnectionString("MongoDBConnection"));
+var db = mongoClient.GetDatabase("admin");
+
+builder.Services.AddSingleton<IMongoClient>(mongoClient);
+builder.Services.AddSingleton(db);
+
+
+builder.Services.AddDbContext<DataContext>(options =>
+{
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"), options =>
+    options.EnableRetryOnFailure());
+});
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -16,9 +31,17 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
-
 app.UseAuthorization();
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var context = services.GetRequiredService<DataContext>();
+    if (context.Database.GetPendingMigrations().Any())
+    {
+        context.Database.Migrate();
+    }
+}
 
 app.MapControllers();
 
